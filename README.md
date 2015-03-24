@@ -5,9 +5,9 @@
 ## 目前正在玩命的开发中，service和native还未完成，插件内部跳转还未完成。
 
 ## 使用方法：PluginLaunch.startPlugin(Context,Path);
-## 并在AndroidManifest.xml中声明 
- <activity android:name="com.lody.plugin.ActivityProxy"/>
+## 并在AndroidManifest.xml的 Activity 标签中声明 com.lody.plugin.ActivityProxy。
+
 
 ### 欢迎加入362901808，我的开源框架群。
 
-## 关于作者：Lody。
+## 关于作者：Lody，17 Years old now.
