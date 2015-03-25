@@ -2,7 +2,9 @@
 
 ## 目前最新颖的插件化解决方案之一，可以快速启动一个apk，没有任何约束！
 
-## 开发进度：service、native和插件内部跳转仍未完成。
+## 开发进度：service、native和插件内部跳转仍未完成
+
+![image](https://github.com/asLody/LodyPluginFrame4A/blob/master/screenshot/plugin2.png)
 
 ## 使用方法：PluginLaunch.startPlugin(Context,Path);
 ## 并在AndroidManifest.xml的 Activity 标签中声明 com.lody.plugin.ActivityProxy。
