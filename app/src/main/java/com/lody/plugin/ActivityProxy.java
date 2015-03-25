@@ -1,6 +1,8 @@
 package com.lody.plugin;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -8,6 +10,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.lody.plugin.reflect.Reflect;
 import com.lody.plugin.reflect.ReflectException;
@@ -17,6 +20,8 @@ import com.lody.plugin.reflect.ReflectException;
  * Created by lody  on 2015/3/24.
  */
 public class ActivityProxy extends Activity {
+
+    public static final String TAG = "ActivityProxy";
 
     /**当前代理的插件 */
     private Activity plugin;
@@ -75,27 +80,42 @@ public class ActivityProxy extends Activity {
      * 加载插件的dex
      */
     private void loadPluginDex() {
+
+
         try {
             pluginPkgInfo = PluginTool.getAppInfo(this, pluginDexPath);
         } catch (PackageManager.NameNotFoundException e) {
             throw new LaunchPluginException("NOT Found plugin from:" + pluginDexPath);
         }
+        if(pluginPkgInfo == null){
+            throw new LaunchPluginException("load plugin failed ");
+        }
         int activityCount = pluginPkgInfo.activities.length;
-        if(activityCount <= pluginIndex && activityCount <= 0){
+        if(activityCount <= pluginIndex || activityCount <= 0){
             throw new IndexOutOfBoundsException("Such index are lower for the count of the plugin.");
         }
         if (pluginActivityName == LPuginConfig.DEF_PLUGIN_CLASS_NAME && pluginPkgInfo.activities != null) {
             pluginActivityName = pluginPkgInfo.activities[pluginIndex].name;
         }
 
+        if(pluginActivityName == null){
+            throw new LaunchPluginException("not found activity on Plugin.");
+        }
+
         Class<?> pluginClass = null;
         try {
+            Toast.makeText(this,pluginActivityName,Toast.LENGTH_SHORT).show();
             pluginClass = getClassLoader().loadClass(pluginActivityName);
         } catch (ClassNotFoundException e) {
             throw new LaunchPluginException(e.getMessage());
         }
         try {
             plugin = (Activity) pluginClass.newInstance();
+            if(plugin == null){
+                throw new LaunchPluginException("make plugin failed!");
+            }
+
+
         } catch (InstantiationException e) {
             throw new LaunchPluginException(e.getMessage());
         } catch (IllegalAccessException e) {
@@ -132,7 +152,15 @@ public class ActivityProxy extends Activity {
 
 
     private void performLoadPlugin(Bundle savedInstanceState) {
-        activityEditor.call("onCreate", savedInstanceState);
+
+        try {
+            Context mBase = thisEditor.get("mBase");
+            Reflect.on(mBase).set("mOuterContext",plugin);
+            Dialog dialog;
+            activityEditor.call("onCreate", savedInstanceState);
+        }catch (ReflectException e){
+
+        }
 
     }
 
@@ -144,6 +172,7 @@ public class ActivityProxy extends Activity {
         thisEditor = Reflect.on(this);
 
         try {
+
             activityEditor.set("mBase", ActivityProxy.this);
             activityEditor.set("mWindow", this.getWindow());
             activityEditor.set("mManagedDialogs", thisEditor.get("mManagedDialogs"));
@@ -169,9 +198,9 @@ public class ActivityProxy extends Activity {
             activityEditor.set("mHandler", thisEditor.get("mHandler"));
             activityEditor.set("mInstanceTracker", thisEditor.get("mInstanceTracker"));
             activityEditor.set("mTitle", thisEditor.get("mTitle"));
+        /*    activityEditor.set("mInstanceTracker", thisEditor.get("mInstanceTracker"));
             activityEditor.set("mInstanceTracker", thisEditor.get("mInstanceTracker"));
-            activityEditor.set("mInstanceTracker", thisEditor.get("mInstanceTracker"));
-            activityEditor.set("mInstanceTracker", thisEditor.get("mInstanceTracker"));
+            activityEditor.set("mInstanceTracker", thisEditor.get("mInstanceTracker"));*/
         }catch (ReflectException e){
            e.printStackTrace();
         }
@@ -199,7 +228,12 @@ public class ActivityProxy extends Activity {
     @Override
     public AssetManager getAssets() {
 
-        return this.pluginAssetManager == null? super.getAssets() : pluginAssetManager;
+        return this.pluginAssetManager == null ? super.getAssets() : pluginAssetManager;
+    }
+
+    @Override
+    public Resources.Theme getTheme() {
+        return this.pluginTheme == null ? super.getTheme():pluginTheme;
     }
 
     @Override
@@ -220,4 +254,55 @@ public class ActivityProxy extends Activity {
         //插件跳转未完成
         super.startActivityForResult(intent, requestCode);
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        activityEditor.call("onStart");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        activityEditor.call("onPause");
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        activityEditor.call("onWindowFocusChanged",hasFocus);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        activityEditor.call("onDestroy");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        activityEditor.call("onResume");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        activityEditor.call("onStop");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        activityEditor.call("onRestart");
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        activityEditor.call("onSaveInstanceState",outState);
+    }
+
+
+
 }

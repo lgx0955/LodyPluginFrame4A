@@ -278,6 +278,7 @@ public class Reflect {
                 Method method = similarMethod(name, types);
                 return on(method, object, args);
             } catch (NoSuchMethodException e1) {
+
                 throw new ReflectException(e1);
             }
         }
