@@ -4,6 +4,7 @@
 
 ## 开发进度：service、native和插件内部跳转仍未完成
 
+![image](https://github.com/asLody/LodyPluginFrame4A/blob/master/screenshot/plugin1.png)
 ![image](https://github.com/asLody/LodyPluginFrame4A/blob/master/screenshot/plugin2.png)
 
 ## 使用方法：PluginLaunch.startPlugin(Context,Path);
